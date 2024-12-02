@@ -1,81 +1,96 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import classnames from 'classnames';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import logo from '../../assets/logo.png';
 import PropTypes from 'prop-types';
+import {NavItem, NavWrapper, SidebarHeader} from ".";
+import {Outlet} from "react-router";
+import styled from "styled-components";
 
-const routes = [
-    { title: 'Home', icon: 'fas-solid fa-house', path: '/' },
-    { title: 'Sales', icon: 'chart-line', path: '/sales' },
-    { title: 'Costs', icon: 'chart-column', path: '/costs' },
-    { title: 'Payments', icon: 'wallet', path: '/payments' },
-    { title: 'Finances', icon: 'chart-pie', path: '/finances' },
-    { title: 'Messages', icon: 'envelope', path: '/messages' },
-];
+const RootWrapper = styled.div`
+    display: grid;
+    grid-template-rows: auto;
+    grid-template-columns: auto 1fr;
+    background-color: ${props => props.theme.button_background.active};
+    color: ${props => props.theme.text.default};
+`;
 
-const bottomRoutes = [
-    { title: 'Settings', icon: 'sliders', path: '/settings' },
-    { title: 'Support', icon: 'phone-volume', path: '/support' },
-];
+const SidebarWrapper = styled.div`
+    width: ${props => props.$compact ? '44px' : '200px'};
+    height: calc(100dvh - 2 * 24px);
+
+    display: flex;
+    flex-direction: column;
+    row-gap: 12px;
+    border-radius: 14px;
+
+    padding: 12px;
+    margin: 12px ${props => props.$compact ? '44px' : '12px'} 12px 12px;
+
+    transition: all .3s;
+
+    background-color: ${props => props.theme.sidebar.default};
+`
+
 
 const Sidebar = (props) => {
-    const { color } = props;
-    const [isOpened, setIsOpened] = useState(false);
-    const containerClassnames = classnames('sidebar', { opened: isOpened });
-
-    const goToRoute = (path) => {
-        console.log(`going to "${path}"`);
-    };
+    const {routes, bottomRoutes} = props;
+    const [isOpened, setIsOpened] = useState(true);
+    const containerClassnames = classnames('sidebar', {opened: isOpened});
 
     const toggleSidebar = () => {
         setIsOpened(v => !v);
     };
 
     return (
-        <div className={ containerClassnames }>
-            <div>
-                <img src={ logo } alt="TensorFlow logo"/>
-                <span>TensorFlow</span>
-                <div onClick={ toggleSidebar }>
-                    <FontAwesomeIcon icon={ isOpened ? 'angle-left' : 'angle-right' }/>
-                </div>
-            </div>
-            <div>
-                {
-                    routes.map(route => (
-                        <div
-                            key={ route.title }
-                            onClick={() => {
-                                goToRoute(route.path);
-                            }}
-                        >
-                            <FontAwesomeIcon icon={ route.icon }/>
-                            <span>{ route.title }</span>
-                        </div>
-                    ))
-                }
-            </div>
-            <div>
-                {
-                    bottomRoutes.map(route => (
-                        <div
-                            key={ route.title }
-                            onClick={() => {
-                                goToRoute(route.path);
-                            }}
-                        >
-                            <FontAwesomeIcon icon={ route.icon }/>
-                            <span>{ route.title }</span>
-                        </div>
-                    ))
-                }
-            </div>
-        </div>
+        <RootWrapper>
+            <SidebarWrapper className={containerClassnames} $compact={!isOpened}>
+                <SidebarHeader
+                    isOpened={isOpened}
+                    toggleSidebar={toggleSidebar}
+                />
+                <NavWrapper>
+                    {
+                        routes.map(route => (
+                            <NavItem
+                                key={route.title}
+                                path={route.path}
+                                icon={route.icon}
+                                title={route.title}
+                                compact={!isOpened}
+                            />
+                        ))
+                    }
+                </NavWrapper>
+                <NavWrapper>
+                    {
+                        bottomRoutes.map(route => (
+                            <NavItem
+                                key={route.title}
+                                title={route.title}
+                                path={route.path}
+                                icon={route.icon}
+                                compact={!isOpened}
+                            />
+                        ))
+                    }
+                </NavWrapper>
+            </SidebarWrapper>
+            <Outlet/>
+        </RootWrapper>
     );
 };
 
 Sidebar.propTypes = {
     color: PropTypes.string,
+    routes: PropTypes.arrayOf(PropTypes.shape({
+        title: PropTypes.string,
+        path: PropTypes.string,
+        icon: PropTypes.string
+    })),
+    bottomRoutes: PropTypes.arrayOf(PropTypes.shape({
+        title: PropTypes.string,
+        path: PropTypes.string,
+        icon: PropTypes.string
+    }))
 };
 
 export default Sidebar;
